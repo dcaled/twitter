@@ -3,7 +3,9 @@
 # User timeline daily crawler
 
 from twitter import *
-from time import gmtime, strftime
+from twitter.util import printNicely
+
+import codecs
 from datetime import datetime, timedelta
 
 # Run this script at gmt 00:00:00
@@ -22,40 +24,62 @@ profiles_list = [
     'RevistaISTOE', 'VEJA', 'RevistaEpoca'
     ]
 
+def save(out_path, filename, tweet):
+    # Save
+    f = codecs.open(out_path + filename+'.txt','a','utf-8')
+    f.write(tweet)
+    f.close()
+    
 # Load config
 config = {}
-#execfile('config.py', config)
+exec(compile(open('config.py', 'rb').read(), 'config.py', 'exec'), config)
 
-# Create twitter API object
-twitter = Twitter(auth = OAuth(
-    '', # OAUTH_TOKEN
-    '', # OAUTH_SECRET,
-    '', # CONSUMER_KEY,
-    '' # CONSUMER_SECRET
-    ))
-                
+def main():
+    # Create twitter API object
+    twitter = Twitter(auth = OAuth(
+        config['access_key'],
+        config['access_secret'],
+        config['consumer_key'],
+        config['consumer_secret']))                  
 
-# Date
-yesterday = datetime.utcnow() - timedelta(days=1)
-time=yesterday.strftime('%a %b %d')
-print(time)
+    # Set output directory
+    out_path = config['out_path']
 
-# Query
-for user in profiles_list:
+    # Date
+    yesterday = datetime.utcnow() - timedelta(days=1)
+    time=yesterday.strftime('%a %b %d')
+    print(time)
 
-    print('------------------------------------------')
-    print(user)
-    print('------------------------------------------')
-        
-    # Query the user timeline.
-    # twitter API docs:
-    # https://dev.twitter.com/rest/reference/get/statuses/user_timeline
-    results = twitter.statuses.user_timeline(screen_name = user, count=50)
+    # Query
+    for user in profiles_list:
+        print('------------------------------------------')
+        print(user)
+        print('------------------------------------------')
+            
+        # Query the user timeline.
+        # twitter API docs:
+        # https://dev.twitter.com/rest/reference/get/statuses/user_timeline
+        results = twitter.statuses.user_timeline(screen_name = user, count=150)
 
 
-    # Loop through each status item, and print its content.
-    t = 0
-    for status in results:
-        if not status['text'].startswith('RT') and status['created_at'][:10] == time:
-            t+=1
-            print(str(t) + '. (%s) %s' % (status['created_at'], status['text'].encode('ascii', 'ignore')))
+        # Loop through each status item, and print its content.
+        t = 0
+        for status in results:
+            if not status['text'].startswith('RT') and status['created_at'][:10] == time:
+                t+=1
+                t_data = str(status['id']) + '\t'
+                t_data += status['created_at'] + '\t'
+                t_data += status['text'].replace('\t', ' ').replace('\n', ' ') + '\n'
+                save(
+                    out_path,
+                    user.lower() + '_' + yesterday.strftime('%Y_%m_%d'),
+                    t_data)
+
+                # print(str(t) + '. (%s) %s' % (status['created_at'], status['text'].encode('ascii', 'ignore')))
+                print(status['id'])
+                printNicely(status['created_at'])
+                printNicely(status['text'])
+                print('\n')
+
+if __name__ == '__main__':
+    main()
