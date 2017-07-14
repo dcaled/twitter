@@ -11,15 +11,18 @@ from datetime import datetime, timedelta
 # Run this script at gmt 00:00:00
 
 profiles_list = [
+    'JornalOGlobo', # Notícias do jornal O GLOBO
     'oglobopolitica', # Cobertura política feita pela equipe do jornal O Globo
     'folha', # Perfil oficial do jornal Folha de S.Paulo
+    'folha_poder', # Canal de diálogo com o leitor da editoria Poder do jornal Folha de S.Paulo
     'Estadao', # A versão on-line do jornal O Estado de S.Paulo.
     'EstadaoPolitica', #Twitter oficial da editoria de Política do Estadão
     'zerohora', # Jornal do Rio Grande do Sul. Notícias, esportes, política, economia, variedades, trânsito, colunistas e mais. 
-    'folha_poder', # Canal de diálogo com o leitor da editoria Poder do jornal Folha de S.Paulo
     'g1politica', # As notícias sobre política no G1
     # Revistas de Esquerda
     'cartamaior', 'cartacapital',
+    'MidiaNINJA', # Narrativas Independentes Jornalismo e Ação
+    'J_LIVRES', # Somos uma rede de coletivos originada na diversidade
     # Revistas de Direita
     'RevistaISTOE', 'VEJA', 'RevistaEpoca'
     ]
@@ -59,7 +62,7 @@ def main():
         # Query the user timeline.
         # twitter API docs:
         # https://dev.twitter.com/rest/reference/get/statuses/user_timeline
-        results = twitter.statuses.user_timeline(screen_name = user, count=150)
+        results = twitter.statuses.user_timeline(screen_name = user, count=250)
 
 
         # Loop through each status item, and print its content.
@@ -70,12 +73,13 @@ def main():
                 t_data = str(status['id']) + '\t'
                 t_data += status['created_at'] + '\t'
                 t_data += status['text'].replace('\t', ' ').replace('\n', ' ') + '\n'
-                save(
+                '''save(
                     out_path,
                     user.lower() + '_' + yesterday.strftime('%Y_%m_%d'),
                     t_data)
-
+                '''
                 # print(str(t) + '. (%s) %s' % (status['created_at'], status['text'].encode('ascii', 'ignore')))
+                # print(str(t))
                 print(status['id'])
                 printNicely(status['created_at'])
                 printNicely(status['text'])
